@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kuri_application/Theme/theme_provider.dart';
 import 'package:kuri_application/Views/AdminScreen/admin_dashboard.dart';
+import 'package:kuri_application/Views/HomeScreen/homeScreen.dart';
 import 'package:kuri_application/Views/UserScreen/user_dashboard.dart';
 import 'package:kuri_application/Views/SplashScreen/splashScreen.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kuri_application/Views/privacy&security/privacy&security.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -40,7 +42,7 @@ class MyApp extends StatelessWidget {
       theme: themeProvider.lightTheme,
       darkTheme: themeProvider.darkTheme,
       themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-      home: Splashscreen()
+      home: HomeScreen()
       // StreamBuilder<User?>(
       //   stream: FirebaseAuth.instance.authStateChanges(),
       //   builder: (context, snapshot) {

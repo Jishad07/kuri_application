@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:kuri_application/Models/chat_message_model.dart';
 import 'package:kuri_application/Utils/AppColor/appColors.dart';
 import 'package:kuri_application/Utils/Text_Styles/text_style.dart';
 import 'package:kuri_application/Utils/images/images.dart';
+import 'package:kuri_application/Views/ChatScreen/chat_screen.dart';
 import 'package:kuri_application/Views/HistoryScreen/historyScreen.dart';
 import 'package:kuri_application/Views/ProfileScreen/profileScreen.dart';
 import 'package:kuri_application/Views/SettingsScreen/settingsScreen.dart';
@@ -50,12 +52,12 @@ class _NextDrawTimerState extends State<NextDrawTimer> {
     DateTime nextDraw;
     
     // Calculate next draw date (27th of current or next month at 19:00/7:00 PM)
-    if (now.day < 27 || (now.day == 27 && now.hour < 19)) {
+    if (now.day < 15 || (now.day == 15 && now.hour < 19)) {
       // Next draw is on the 27th of current month at 7:00 PM
-      nextDraw = DateTime(now.year, now.month, 27, 19, 0);
+      nextDraw = DateTime(now.year, now.month, 15, 19, 0);
     } else {
       // Next draw is on the 27th of next month at 7:00 PM
-      nextDraw = DateTime(now.year, now.month + 1, 27, 19, 0);
+      nextDraw = DateTime(now.year, now.month + 1, 15, 19, 0);
     }
 
     final difference = nextDraw.difference(now);
@@ -202,6 +204,7 @@ class HomeScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
+                 
                   Row(
                     children: [
                       Hero(
@@ -235,6 +238,7 @@ class HomeScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            
                             Row(
                               children: [
                                 Image.asset(
@@ -436,6 +440,27 @@ class HomeScreen extends StatelessWidget {
             title: 'History',
             onTap: () => Get.to(() => DrawHistoryPage()),
           ),
+            _buildDrawerItem(
+            icon: Icons.notification_important_outlined,
+            title: 'Notifications',
+            onTap: () {
+             Get.to(()=>SettingsScreen());
+            },
+          ),
+                _buildDrawerItem(
+            icon: Icons.chat_bubble_outline_outlined,
+            title: 'Chat',
+            onTap: () {
+             Get.to(()=>ChatScreen());
+            },
+          ),
+              _buildDrawerItem(
+            icon: Icons.person_search,
+            title: 'Users',
+            onTap: () {
+             Get.to(()=>SettingsScreen());
+            },
+          ),
           _buildDrawerItem(
             icon: Icons.settings_outlined,
             title: 'Settings',
@@ -443,6 +468,7 @@ class HomeScreen extends StatelessWidget {
              Get.to(()=>SettingsScreen());
             },
           ),
+          
           const Spacer(),
           _buildDrawerItem(
             icon: Icons.logout,

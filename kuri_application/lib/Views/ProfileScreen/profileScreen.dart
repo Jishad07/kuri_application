@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:kuri_application/Utils/AppColor/appColors.dart';
+import 'package:kuri_application/Views/SettingsScreen/settingsScreen.dart';
+
+import '../privacy&security/privacy&security.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -92,19 +96,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildStatsRow() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _buildStatItem("Posts", "28"),
-          _buildStatItem("Followers", "1.2K"),
-          _buildStatItem("Following", "184"),
-        ],
-      ),
-    );
-  }
+  // Widget _buildStatsRow() {
+  //   return 
+  //   // Padding(
+  //   //   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+  //   //   child: Row(
+  //   //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  //   //     children: [
+  //   //       _buildStatItem("Posts", "28"),
+  //   //       _buildStatItem("Followers", "1.2K"),
+  //   //       _buildStatItem("Following", "184"),
+  //   //     ],
+  //   //   ),
+  //   // );
+  // }
 
   Widget _buildStatItem(String label, String value) {
     return Column(
@@ -157,7 +162,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             child: IconButton(
               icon: const Icon(Icons.settings),
-              onPressed: () {},
+              onPressed: () {
+                Get.to(SettingsScreen());
+              },
               color: AppColors.primaryColor,
             ),
           ),
@@ -195,7 +202,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
       trailing: const Icon(Icons.chevron_right),
-      onTap: () {},
+      onTap: () {
+        Get.to(PoolSystemScreen());
+      },
       contentPadding: EdgeInsets.zero,
     );
   }
@@ -208,7 +217,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             _buildProfileHeader(),
             _buildProfileInfo(),
-            _buildStatsRow(),
+            SizedBox(height: 20,),
+            // _buildStatsRow(),
             _buildActionButtons(),
             const Divider(height: 30),
             _buildProfileOptions(),

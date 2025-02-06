@@ -46,7 +46,7 @@ class WalkthroughSecondScreen extends StatelessWidget {
                   child: IconButton(
                     onPressed: () {
                       // Get.off(WalkthroughTHirdScreen());
-                                        Get.to(WalkthroughTHirdScreen(),transition: Transition.rightToLeft,duration: Duration(milliseconds: 700));
+                                        Get.to(WalkthroughTHirdScreen(),transition: Transition.fade,duration: Duration(milliseconds: 900));
                     },
                     icon: Icon(
                       Icons.arrow_forward,

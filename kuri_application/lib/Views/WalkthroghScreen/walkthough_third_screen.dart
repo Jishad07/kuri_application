@@ -46,7 +46,7 @@ class WalkthroughTHirdScreen extends StatelessWidget {
                   child: IconButton(
                     onPressed: () {
                       // Get.off(LoginScreen());
-                      Get.to(LoginScreen(),transition: Transition.rightToLeft,duration: Duration(milliseconds: 700));
+                      Get.to(LoginScreen(),transition: Transition.fade,duration: Duration(milliseconds: 900));
                     },
                     icon: Icon(
                       Icons.arrow_forward,
