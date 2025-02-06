@@ -10,6 +10,7 @@ class CustomTextFormField extends StatelessWidget {
     this.hintText,
     this.fillColor,
     this.borderRadius = 8.0,
+    this. validator
   });
 
   final TextEditingController namecontroller;
@@ -17,12 +18,14 @@ class CustomTextFormField extends StatelessWidget {
   final String? hintText;
   final Color? fillColor;
   final double borderRadius;
+  final FormFieldValidator<String>? validator;
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       controller: namecontroller,
       decoration: InputDecoration(
+        
         label: label,
         hintText: hintText,
         hintStyle: TextStyle(
@@ -54,6 +57,7 @@ class CustomTextFormField extends StatelessWidget {
         ),
         contentPadding: EdgeInsets.symmetric(vertical: 14.0, horizontal: 16.0), // Padding inside the text field
       ),
+      validator: validator,
     );
   }
 }

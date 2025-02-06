@@ -227,7 +227,7 @@ class HomeScreen extends StatelessWidget {
                           ),
                           child: ClipOval(
                             child: Image.asset(
-                              Images.winnerPhoto,
+                              Images.winnerphoto1,
                               fit: BoxFit.cover,
                             ),
                           ),
