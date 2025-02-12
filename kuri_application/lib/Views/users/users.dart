@@ -21,6 +21,7 @@ class UsersScreen extends StatefulWidget {
 class _UsersScreenState extends State<UsersScreen> {
    final DatabaseHelper dbHelper = DatabaseHelper.instance;
      List<Contributor> contributors = [];
+      bool isLoading = true;
   @override
   void initState(){
    _fetchContributors();
@@ -28,12 +29,16 @@ class _UsersScreenState extends State<UsersScreen> {
     
   }
    _fetchContributors() async {
+    Future.delayed(Duration(seconds: 3),()async{
     final List<Contributor> fetchedContributors = await dbHelper.getContributors();
     setState(() {
       contributors = fetchedContributors;
+      isLoading = false;
     });
+    });
+
   }
-   void _deleteContributor(Contributor contributor) async {
+   void _deleteContributor(Contributor contributor,String name) async {
 
   await DatabaseHelper.instance.deleteContributor(contributor.id!);
 
@@ -43,7 +48,7 @@ class _UsersScreenState extends State<UsersScreen> {
 
   // Show a confirmation message
   ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text('Contributor deleted!')),
+    SnackBar(content: Text('${name} Contributor deleted!')),
   );
    }
     void _showBottomSheet(Contributor contributor) {
@@ -82,9 +87,9 @@ class _UsersScreenState extends State<UsersScreen> {
                 title: Text("Delete"),
                 onTap: () {
                 
-                  _deleteContributor(contributor);
-                  // Implement Delete functionality here
-                  Navigator.pop(context); // Close the bottom sheet
+                  _deleteContributor(contributor,contributor.name);
+               
+                  Navigator.pop(context); 
                 },
               ),
             ],
@@ -95,31 +100,6 @@ class _UsersScreenState extends State<UsersScreen> {
   }
   @override
   Widget build(BuildContext context) {
-    //  List<String> names = [
-    //   'Jishad',
-    //   'Nimesh',
-    //   'Bashid',
-    //   'Akhil',
-    //   'Achu',
-    //   'Appu',
-    //   'Hafeef',
-    //   'Zakariya',
-    //   'Roopesh',
-    //   'Suni',
-    // ];
-
-    // List<String> phoneNumbers = [
-    //   '9847298705',
-    //   '9847298706',
-    //   '9847298707',
-    //   '9847298708',
-    //   '9847298709',
-    //   '9847298710',
-    //   '9847298711',
-    //   '9847298712',
-    //   '9847298713',
-    //   '9847298714',
-    // ];
     return Scaffold(
         appBar: AppBar(
           title: 
@@ -135,8 +115,12 @@ class _UsersScreenState extends State<UsersScreen> {
         backgroundColor: AppColors.secondaryColor,
         child: Icon(Icons.add),
       ),
-        body:contributors.isEmpty?
-        Center(child: CircularProgressIndicator(),):
+        body:isLoading?
+        // contributors.isEmpty?
+        Center(child:
+         CircularProgressIndicator(),
+         ):contributors.isEmpty?
+         Center(child: Text("Contributors are Empty"),):
          ListView.separated(
             itemBuilder: (context, index) {
                Contributor contributor = contributors[index];
@@ -151,7 +135,7 @@ class _UsersScreenState extends State<UsersScreen> {
                     ),
               
                     title: Text(contributor.name, style: TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text(contributor.email),
+                    subtitle: Text(contributor.phoneNumber),
                     trailing: IconButton(onPressed: (){
                      
                           _showBottomSheet(contributor);
@@ -159,42 +143,139 @@ class _UsersScreenState extends State<UsersScreen> {
                      
                     }, icon:Icon(CupertinoIcons.ellipsis_vertical_circle))
                     ,
-                    // Row(
-                    //   mainAxisSize: MainAxisSize.min,
-                    //   children: [
-                    //     IconButton(
-                    //       icon: Icon(Icons.edit, color: Colors.blue),
-                    //       onPressed: () => null,
-                    //     ),
-                    //     IconButton(
-                    //       icon: Icon(Icons.delete, color: Colors.red),
-                    //       onPressed: () => null,
-                    //     ),
-                    //   ],
-                    // ),
+              
                   ),
                 );
-              // ListTile(
-              //   tileColor: AppColors.primaryColor,
-              //   leading: CircleAvatar(
-              //     backgroundImage: contributor.image.isNotEmpty?FileImage(File(contributor.image)):null,
-              //     radius: 50,
-              //     backgroundColor: AppColors.backgroundColor,
-              //   ),
-              //   title: Text(contributor.name),
-              //   subtitle: Text(contributor.phoneNumber),
-              //   trailing: CircleAvatar(
-              //     backgroundColor: AppColors.secondaryColor,
-              //     radius: 15,
-              //   ),
-              //   onTap: () => Get.to(() => const ProfileScreen()),
-              // );
+         
             },
             separatorBuilder: (context,index ) {
               return SizedBox(height: 5,);
             },
-            itemCount: contributors.length));
+            itemCount: contributors.length
+            )
+
+            );
     
   }
   
 }
+
+
+// import 'package:flutter/cupertino.dart';
+// import 'package:flutter/material.dart';
+// import 'package:get/get.dart'; // Import the controller
+// import 'package:kuri_application/Models/Contributor.dart';
+// import 'package:kuri_application/Utils/AppColor/appColors.dart';
+// import 'dart:io';
+
+// import '../../Controls/contributor_controller.dart'; // For FileImage usage
+
+// class UsersScreen extends StatelessWidget {
+
+//   const UsersScreen({super.key});
+
+
+//       void _showBottomSheet(Contributor contributor) {
+//     showModalBottomSheet(
+//       context: context,
+//       // shape: RoundedRectangleBorder(
+//       //    borderRadius: BorderRadius.only(
+//       //   topLeft: Radius.circular(50.0), // Adjust the curve on the top-left corner
+//       //   topRight: Radius.circular(50.0), // Adjust the curve on the top-right corner
+//       // ),
+//       // ),
+//       builder: (BuildContext context) {
+//         return Container(
+         
+//           padding: EdgeInsets.all(20),
+//           height: 200, // Adjust the height of the bottom sheet as needed
+//           child: Column(
+//             crossAxisAlignment: CrossAxisAlignment.start,
+//             children: [
+//               Text(
+//                 "Options for ${contributor.name}",
+//                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+//               ),
+//               SizedBox(height: 20),
+//               ListTile(
+//                 leading: Icon(CupertinoIcons.pen, color: Colors.blue),
+//                 title: Text("Edit"),
+//                 onTap: () {
+//                   // updateContributor();
+//                   // Implement Edit functionality here
+//                   Navigator.pop(context); // Close the bottom sheet
+//                 },
+//               ),
+//               ListTile(
+//                 leading: Icon(CupertinoIcons.delete_solid, color: Colors.red),
+//                 title: Text("Delete"),
+//                 onTap: () {
+                
+//                   _deleteContributor(contributor);
+//                   // Implement Delete functionality here
+//                   Navigator.pop(context); // Close the bottom sheet
+//                 },
+//               ),
+//             ],
+//           ),
+//         );
+//       },
+//     );
+//   }
+//   @override
+//   Widget build(BuildContext context) {
+//     // Initialize ContributorController and fetch contributors
+//     final ContributorController contributorController = Get.put(ContributorController());
+//     contributorController.fetchContributors();
+
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: Text('Users Screen'),
+//         centerTitle: true,
+//       ),
+//       floatingActionButton: FloatingActionButton(
+//         onPressed: () {
+//           // Implement add user functionality
+//         },
+//         backgroundColor: AppColors.secondaryColor,
+//         child: Icon(Icons.add),
+//       ),
+//       body: Obx(() {
+//         // When contributors list is empty, show a loading indicator
+//         if (contributorController.contributors.isEmpty) {
+//           return Center(child: CircularProgressIndicator());
+//         } else {
+//           return ListView.separated(
+//             itemBuilder: (context, index) {
+//               Contributor contributor = contributorController.contributors[index];
+//               return 
+//                            Card(
+//                   margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+//                   elevation: 4,
+//                   child: ListTile(
+//                     leading: CircleAvatar(
+//                       radius: 50,
+//                       backgroundImage: FileImage(File(contributor.image)),
+//                     ),
+              
+//                     title: Text(contributor.name, style: TextStyle(fontWeight: FontWeight.bold)),
+//                     subtitle: Text(contributor.email),
+//                     trailing: IconButton(onPressed: (){
+                     
+//                           _showBottomSheet(contributor,);
+                   
+                     
+//                     }, icon:Icon(CupertinoIcons.ellipsis_vertical_circle))
+//                     ,
+              
+//                   ),
+//                 );
+//             },
+//             separatorBuilder: (context, index) => SizedBox(height: 5),
+//             itemCount: contributorController.contributors.length,
+//           );
+//         }
+//       }),
+//     );
+//   }
+// }

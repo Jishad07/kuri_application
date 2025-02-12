@@ -1,8 +1,14 @@
 import 'dart:ffi';
 import 'dart:async';
+import 'dart:io';
+import 'dart:math';
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:kuri_application/Helpers/database_helper.dart';
+import 'package:kuri_application/Models/Contributor.dart';
 import 'package:kuri_application/Models/chat_message_model.dart';
 import 'package:kuri_application/Utils/AppColor/appColors.dart';
 import 'package:kuri_application/Utils/Text_Styles/text_style.dart';
@@ -11,9 +17,15 @@ import 'package:kuri_application/Views/ChatScreen/chat_screen.dart';
 import 'package:kuri_application/Views/HistoryScreen/historyScreen.dart';
 import 'package:kuri_application/Views/ProfileScreen/profileScreen.dart';
 import 'package:kuri_application/Views/SettingsScreen/settingsScreen.dart';
+import 'package:kuri_application/Views/users/users.dart';
 
 class NextDrawTimer extends StatefulWidget {
   const NextDrawTimer({super.key});
+  
+  Map<String, int> timeUnits(BuildContext context) {
+    final state = context.findAncestorStateOfType<_NextDrawTimerState>();
+    return state?._timeUnits ?? {'seconds': 0, 'minutes': 0, 'days': 0, 'weeks': 0};
+  }
 
   @override
   State<NextDrawTimer> createState() => _NextDrawTimerState();
@@ -21,12 +33,15 @@ class NextDrawTimer extends StatefulWidget {
 
 class _NextDrawTimerState extends State<NextDrawTimer> {
   Timer? _timer;
+  Timer? _randomNumberTimer;
   Map<String, int> _timeUnits = {
     'weeks': 0,
     'days': 0,
     'minutes': 0,
     'seconds': 0
   };
+ int _randomNumber = 0;
+  bool _showRandomNumber = false;
 
   @override
   void initState() {
@@ -44,7 +59,31 @@ class _NextDrawTimerState extends State<NextDrawTimer> {
     _updateRemainingTime(); // Initial update
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       _updateRemainingTime();
+
+      if(_timeUnits['seconds']==0){
+         _startRandomNumberGeneration();
+      }
     });
+  }
+
+    void _startRandomNumberGeneration() {
+    setState(() {
+      _showRandomNumber = true;
+    });
+
+    _randomNumberTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        _randomNumber = _generateRandomNumber();
+      });
+
+      if (timer.tick >= 10) {
+        timer.cancel();
+      }
+    });
+  }
+
+  int _generateRandomNumber() {
+    return Random().nextInt(10) + 1; // Generates a number between 1 and 10
   }
 
   void _updateRemainingTime() {
@@ -52,12 +91,12 @@ class _NextDrawTimerState extends State<NextDrawTimer> {
     DateTime nextDraw;
     
     // Calculate next draw date (27th of current or next month at 19:00/7:00 PM)
-    if (now.day < 15 || (now.day == 15 && now.hour < 19)) {
+    if (now.day < 11 || (now.day == 11 && now.hour < 19)) {
       // Next draw is on the 27th of current month at 7:00 PM
-      nextDraw = DateTime(now.year, now.month, 15, 19, 0);
+      nextDraw = DateTime(now.year, now.month, 11, 19, 0);
     } else {
       // Next draw is on the 27th of next month at 7:00 PM
-      nextDraw = DateTime(now.year, now.month + 1, 15, 19, 0);
+      nextDraw = DateTime(now.year, now.month + 1, 11, 19, 0);
     }
 
     final difference = nextDraw.difference(now);
@@ -66,18 +105,23 @@ class _NextDrawTimerState extends State<NextDrawTimer> {
       _timeUnits = {
         'weeks': difference.inDays ~/ 7,
         'days': difference.inDays % 7,
+        'hours':difference.inHours.remainder(60),
         'minutes': difference.inMinutes.remainder(60) + (difference.inHours.remainder(24) * 60),
         'seconds': difference.inSeconds.remainder(60)
       };
     });
   }
+   Map<String, int> get timeUnits => _timeUnits;
 
   String _getDisplayValue() {
     if (_timeUnits['weeks']! > 0) {
       return _timeUnits['weeks']!.toString();
     } else if (_timeUnits['days']! > 0) {
       return _timeUnits['days']!.toString();
-    } else if (_timeUnits['minutes']! > 0) {
+    } else if(_timeUnits['hours']!>0){
+   return _timeUnits['hours']!.toString();
+    }
+    else if (_timeUnits['minutes']! > 0) {
       return _timeUnits['minutes']!.toString();
     } else {
       return _timeUnits['seconds']!.toString();
@@ -86,13 +130,16 @@ class _NextDrawTimerState extends State<NextDrawTimer> {
 
   String _getDisplayUnit() {
     if (_timeUnits['weeks']! > 0) {
-      return '${_timeUnits['weeks'] == 1 ? 'week' : 'weeks'} remaining';
+      return '${_timeUnits['weeks'] == 1 ? 'Week' : 'Weeks'} remaining';
     } else if (_timeUnits['days']! > 0) {
-      return '${_timeUnits['days'] == 1 ? 'day' : 'days'} remaining';
-    } else if (_timeUnits['minutes']! > 0) {
-      return '${_timeUnits['minutes'] == 1 ? 'minute' : 'minutes'} remaining';
+      return '${_timeUnits['days'] == 1 ? 'Day' : 'Days'} remaining';
+    } else if(_timeUnits['hours']!>0){
+     return '${_timeUnits["hour"]==1?"Hour":"Hours"} remaining';
+    }
+    else if (_timeUnits['minutes']! > 0) {
+      return '${_timeUnits['minutes'] == 1 ? 'Minute' : 'Minutes'} remaining';
     } else {
-      return '${_timeUnits['seconds'] == 1 ? 'second' : 'seconds'} remaining';
+      return '${_timeUnits['seconds'] == 1 ? 'Second' : 'Seconds'} remaining';
     }
   }
 
@@ -147,11 +194,47 @@ class _NextDrawTimerState extends State<NextDrawTimer> {
   }
 }
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
+ 
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+   final DatabaseHelper dbHelper = DatabaseHelper.instance;
+      List<Contributor> contributors = [];
+      bool isLoading = true;
+
+   
+
+
+  @override
+  void initState() {
+      _fetchContributors();
+     
+    // TODO: implement initState
+    super.initState();
+  }
+  _fetchContributors() async {
+    Future.delayed(Duration(seconds: 3),()async{
+    final List<Contributor> fetchedContributors = await dbHelper.getContributors();
+    setState(() {
+      contributors = fetchedContributors;
+      isLoading = false;
+    });
+    });
+
+  }
+  @override
+  void dispose() {
+   
+    super.dispose();
+  }
+  @override
   Widget build(BuildContext context) {
+   
     return Scaffold(
       backgroundColor: Colors.grey[100],
       drawer: _buildDrawer(context),
@@ -202,9 +285,90 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Column(
+              child:NextDrawTimer().timeUnits(context)['seconds']==0?
+             Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  height: 250,
+                  width: 250,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.white.withOpacity(0.3),
+                        Colors.white.withOpacity(0.1),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.5),
+                      width: 2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 20,
+                        spreadRadius: 2,
+                        offset: Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: ClipOval(
+                    child: CarouselSlider(
+                      options: CarouselOptions(
+                        autoPlayInterval: Duration(milliseconds:500 ),
+                        autoPlay: true,
+                        height: 250.0,
+                        viewportFraction: 1.0,
+                        enlargeCenterPage: true,
+                        enlargeStrategy: CenterPageEnlargeStrategy.height,
+                      ),
+                      items: contributors.map((contributor) {
+                        return Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              Image.file(
+                                File(contributor.image),
+                                fit: BoxFit.cover,
+                              ),
+                              Positioned(
+                                bottom: 50 ,
+                                left: 50 ,
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black54,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    contributor.id.toString(),
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+              ],
+             ):
+              contributors.isNotEmpty?
+               Column(
                 children: [
-                 
+               
                   Row(
                     children: [
                       Hero(
@@ -226,16 +390,19 @@ class HomeScreen extends StatelessWidget {
                             ],
                           ),
                           child: ClipOval(
-                            child: Image.asset(
-                              Images.winnerphoto1,
-                              fit: BoxFit.cover,
-                            ),
+                            child: Image.file(File(contributors[0].image))
+                            // Image.asset(
+                            //   Images.winnerphoto1,
+                            //   fit: BoxFit.cover,
+                            // ),
                           ),
                         ),
                       ),
                       SizedBox(width: 20),
                       Expanded(
-                        child: Column(
+                        child:
+
+                        Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             
@@ -243,8 +410,8 @@ class HomeScreen extends StatelessWidget {
                               children: [
                                 Image.asset(
                                   Images.trophy,
-                                  height: 30,
-                                  width: 30,
+                                  height:MediaQuery.of(context).size.height *0.05 ,
+                                  width: MediaQuery.of(context).size.width *0.03 ,
                                 ),
                                 SizedBox(width: 10),
                                 Text(
@@ -259,7 +426,8 @@ class HomeScreen extends StatelessWidget {
                             ),
                             SizedBox(height: 8),
                             Text(
-                              "Jinas.A",
+                              // "Jishad.A",
+                              contributors[1].name,
                               style: GoogleFonts.poppins(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
@@ -272,9 +440,9 @@ class HomeScreen extends StatelessWidget {
                     ],
                   ),
                 ],
-              ),
-            ),
-            Container(
+              ):null
+             ),
+             Container(
               margin: EdgeInsets.symmetric(horizontal: 16),
               padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -371,7 +539,7 @@ class HomeScreen extends StatelessWidget {
               child: ListView.builder(
                 physics: BouncingScrollPhysics(),
                 scrollDirection: Axis.horizontal,
-                itemCount: 10,
+                itemCount: contributors.length,
                 itemBuilder: (context, index) {
                   return Container(
                     margin: EdgeInsets.only(
@@ -397,10 +565,11 @@ class HomeScreen extends StatelessWidget {
                             ],
                           ),
                           child: ClipOval(
-                            child: Image.asset(
-                              "assets/images/bavu.JPG",
-                              fit: BoxFit.cover,
-                            ),
+                            child: Image.file(File(contributors[index].image))
+                            // Image.asset(
+                            //   "assets/images/bavu.JPG",
+                            //   fit: BoxFit.cover,
+                            // ),
                           ),
                         ),
                         SizedBox(height: 8),
@@ -458,7 +627,7 @@ class HomeScreen extends StatelessWidget {
             icon: Icons.person_search,
             title: 'Users',
             onTap: () {
-             Get.to(()=>SettingsScreen());
+             Get.to(()=>UsersScreen());
             },
           ),
           _buildDrawerItem(
