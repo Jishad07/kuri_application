@@ -321,7 +321,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         autoPlayInterval: Duration(milliseconds:500 ),
                         autoPlay: true,
                         height: 250.0,
-                        viewportFraction: 1.0,
+                        viewportFraction: 1.0 ,
                         enlargeCenterPage: true,
                         enlargeStrategy: CenterPageEnlargeStrategy.height,
                       ),
