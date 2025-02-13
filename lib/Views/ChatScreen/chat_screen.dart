@@ -27,7 +27,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _loadCurrentUser();
   }
 
-  Future<void> _loadCurrentUser() async {
+  Future<void> _loadCurrentUser() async { 
     try {
       final userDoc = await _firestore
           .collection('users')
