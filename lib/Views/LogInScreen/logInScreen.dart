@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kuri_application/Utils/AppColor/appColors.dart';
 import 'package:kuri_application/Utils/images/images.dart';
+import 'package:kuri_application/Views/SignUp%20Screen/signupScreen.dart';
 import 'package:kuri_application/Views/HomeScreen/homeScreen.dart';
+
+import '../../Services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -24,6 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
     // Method to handle login logic (with validation)
   void _login() {
+
     if (formkey.currentState?.validate() ?? false) {
       setState(() {
         _isLoading = true;
@@ -157,8 +161,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   height: 50, 
                   buttonColor: AppColors.primaryColor,
                   onPressedCallback: () {
-                    _login();
-                   
+                    // _login();
+                   AuthService().signIn(email:_emailController.text , password: _passwordController.text, context: context);
                     // Get.off(HomeScreen());
                   },
                   ),
@@ -173,7 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       GestureDetector(
                         onTap: () {
                           // Handle Sign Up action
-                          
+                          Get.to(SignUpScreen());
                         },
                         child: Text(
                           'Sign Up',

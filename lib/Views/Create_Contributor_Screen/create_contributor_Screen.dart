@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -32,25 +33,37 @@ class _CreateContributorScreenState extends State<CreateContributorScreen> {
   final DatabaseHelper dbHelper = DatabaseHelper.instance;
   // Save contributor data to database
   _saveContributor() async {
+    CollectionReference collRef=FirebaseFirestore.instance.collection('contributors');
+    
     if (formkey.currentState!.validate()) {
+     
         if (image.isEmpty) {
    SnackbarHelper.showCustomSnackbar(context, AppTexts.imageRequired,);
       return; // Prevent navigation if image is not selected
     }
-      String name = namecontroller.text;
-      String phoneNumber = phonenumbercontroller.text;
-      String email = emailcontroller.text;
+  
+     collRef.add(
+      {
+        'name': namecontroller.text,
+        'email': emailcontroller.text,
+        'phoneNumber':phonenumbercontroller.text,
+        'image':image
+      }
+    );
+      // String name = namecontroller.text;
+      // String phoneNumber = phonenumbercontroller.text;
+      // String email = emailcontroller.text;
 
-      // Create a new Contributor object
-      Contributor contributor = Contributor(
-        name: name,
-        phoneNumber: phoneNumber,
-        email: email,
-        image: image, // Use the image path or base64 string here
-      );
+      // // Create a new Contributor object
+      // Contributor contributor = Contributor(
+      //   name: name,
+      //   phoneNumber: phoneNumber,
+      //   email: email,
+      //   image: image, // Use the image path or base64 string here
+      // );
 
-      // Insert contributor into the database
-      await dbHelper.insertContributor(contributor);
+      // // Insert contributor into the database
+      // await dbHelper.insertContributor(contributor);
 
       // Optionally, clear the form and show a success message
     SnackbarHelper.showCustomSnackbar(context,AppTexts.contributorRegistered);
@@ -149,7 +162,8 @@ class _CreateContributorScreenState extends State<CreateContributorScreen> {
                         height: 20,
                       ),
                       CustomTextFormField(
-                          namecontroller: namecontroller,
+                        
+                          controller: namecontroller,
                           hintText: AppTexts.enterName,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -161,7 +175,7 @@ class _CreateContributorScreenState extends State<CreateContributorScreen> {
                         height: 20,
                       ),
                       CustomTextFormField(
-                        namecontroller: emailcontroller,
+                        controller: emailcontroller,
                         hintText: AppTexts.enterEmail,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -177,7 +191,7 @@ class _CreateContributorScreenState extends State<CreateContributorScreen> {
                       ),
 
                       CustomTextFormField(
-                          namecontroller: phonenumbercontroller,
+                          controller: phonenumbercontroller,
                           hintText: AppTexts.enterPhoneNumber,
                           validator: (value) {
                             // Check if the input is empty

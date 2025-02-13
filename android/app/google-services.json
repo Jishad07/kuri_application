@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "830934571460",
-    "project_id": "kuri-e822c",
-    "storage_bucket": "kuri-e822c.firebasestorage.app"
+    "project_number": "593441595489",
+    "project_id": "kuri-41e62",
+    "storage_bucket": "kuri-41e62.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:830934571460:android:616b40b5214a9a0340ac91",
+        "mobilesdk_app_id": "1:593441595489:android:ac92c23dd0c391b9c20a20",
         "android_client_info": {
           "package_name": "com.example.kuri_application"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCYGKpbjOqamO5TYK5bA4deckfYnK7nojE"
+          "current_key": "AIzaSyDHc8OLnOuP6E6RM41z96R_sh-nqkB1c2Y"
         }
       ],
       "services": {

@@ -5,25 +5,37 @@ import 'package:kuri_application/Utils/AppColor/appColors.dart';
 class CustomTextFormField extends StatelessWidget {
   CustomTextFormField({
     super.key,
-    required this.namecontroller,
+    required this.controller,
+    this.prefixIcon,
     this.label,
     this.hintText,
     this.fillColor,
     this.borderRadius = 8.0,
-    this. validator
+    this. validator,
+    this.keyboardType,
+    this.decoration,
+    this.border,
+    this.borderColor
   });
 
-  final TextEditingController namecontroller;
+  final TextEditingController controller;
+  final TextInputType?keyboardType;
+  final OutlineInputBorder? border;
   final Widget? label;
   final String? hintText;
   final Color? fillColor;
+  final Color? borderColor;
   final double borderRadius;
   final FormFieldValidator<String>? validator;
+  final InputDecoration?decoration;
+  final Icon?prefixIcon;
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      controller: namecontroller,
+      controller: controller,
+      keyboardType:keyboardType,
+      
       decoration: InputDecoration(
         
         label: label,
@@ -44,7 +56,7 @@ class CustomTextFormField extends StatelessWidget {
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadius),
           borderSide: BorderSide(
-            color: AppColors.primaryVariant,
+            color:  borderColor??AppColors.primaryVariant,
             width: 1.0,
           ),
         ),

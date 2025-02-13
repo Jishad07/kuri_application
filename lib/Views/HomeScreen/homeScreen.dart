@@ -4,12 +4,17 @@ import 'dart:io';
 import 'dart:math';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:kuri_application/Helpers/database_helper.dart';
 import 'package:kuri_application/Models/Contributor.dart';
 import 'package:kuri_application/Models/chat_message_model.dart';
+import 'package:kuri_application/Models/contributors_model.dart';
+import 'package:kuri_application/Services/auth_service.dart';
+import 'package:kuri_application/Theme/contributors_service.dart';
 import 'package:kuri_application/Utils/AppColor/appColors.dart';
 import 'package:kuri_application/Utils/Text_Styles/text_style.dart';
 import 'package:kuri_application/Utils/images/images.dart';
@@ -18,6 +23,7 @@ import 'package:kuri_application/Views/HistoryScreen/historyScreen.dart';
 import 'package:kuri_application/Views/ProfileScreen/profileScreen.dart';
 import 'package:kuri_application/Views/SettingsScreen/settingsScreen.dart';
 import 'package:kuri_application/Views/users/users.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class NextDrawTimer extends StatefulWidget {
   const NextDrawTimer({super.key});
@@ -32,6 +38,9 @@ class NextDrawTimer extends StatefulWidget {
 }
 
 class _NextDrawTimerState extends State<NextDrawTimer> {
+
+
+
   Timer? _timer;
   Timer? _randomNumberTimer;
   Map<String, int> _timeUnits = {
@@ -46,6 +55,7 @@ class _NextDrawTimerState extends State<NextDrawTimer> {
   @override
   void initState() {
     super.initState();
+ 
     _startTimer();
   }
 
@@ -143,6 +153,8 @@ class _NextDrawTimerState extends State<NextDrawTimer> {
     }
   }
 
+
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -153,6 +165,7 @@ class _NextDrawTimerState extends State<NextDrawTimer> {
           children: [
             Text(
               "Next Draw",
+              // name,
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 color: Colors.white,
@@ -203,29 +216,49 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+
+   String name = '';
+  String email = '';
    final DatabaseHelper dbHelper = DatabaseHelper.instance;
-      List<Contributor> contributors = [];
+      List<ContributorModel> contributors = [];
+       List<ContributorModel> contributorsList = [];
       bool isLoading = true;
+        String? errorMessage;
 
    
 
 
   @override
   void initState() {
-      _fetchContributors();
-     
+       _fetchContributors() ;
+        _fetchUserData();
     // TODO: implement initState
     super.initState();
   }
-  _fetchContributors() async {
-    Future.delayed(Duration(seconds: 3),()async{
-    final List<Contributor> fetchedContributors = await dbHelper.getContributors();
-    setState(() {
-      contributors = fetchedContributors;
-      isLoading = false;
-    });
-    });
 
+      Future<void> _fetchUserData() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      DocumentSnapshot userData = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      setState(() {
+        name = userData['name'];
+        email = userData['email'];
+      });
+    }
+  }
+   Future<void> _fetchContributors() async {
+    try {
+      final fetchedContributors = await ContributorsService().fetchContributors();
+      setState(() {
+        contributors = fetchedContributors;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        errorMessage = 'Error loading contributors: $e';
+        isLoading = false;
+      });
+    }
   }
   @override
   void dispose() {
@@ -252,6 +285,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         title: Text(
           'Kuri',
+          // name,
           style: GoogleFonts.poppins(
             fontSize: 24,
             fontWeight: FontWeight.w600,
@@ -318,10 +352,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: ClipOval(
                     child: CarouselSlider(
                       options: CarouselOptions(
-                        autoPlayInterval: Duration(milliseconds:500 ),
+                        autoPlayInterval: Duration(milliseconds:1000 ),
                         autoPlay: true,
                         height: 250.0,
-                        viewportFraction: 1.0,
+                        viewportFraction: 1.0 ,
                         enlargeCenterPage: true,
                         enlargeStrategy: CenterPageEnlargeStrategy.height,
                       ),
@@ -347,7 +381,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Text(
-                                    contributor.id.toString(),
+                                    // "1",
+                                    contributor.role,
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 16,
@@ -642,7 +677,9 @@ class _HomeScreenState extends State<HomeScreen> {
           _buildDrawerItem(
             icon: Icons.logout,
             title: 'Logout',
-            onTap: () {
+            onTap: ()async {
+           await  AuthService().signOut(context: context);
+            
               // Handle logout
               Get.back();
               // Add your logout logic here
@@ -656,6 +693,27 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildDrawerHeader() {
+    String image = ''; // Declare this in the State class
+
+  Future<void> _pickImage() async {
+    PermissionStatus status = await Permission.photos.request();
+    if (!status.isGranted) {
+      final ImagePicker _picker = ImagePicker();
+      final XFile? pickedFile =
+          await _picker.pickImage(source: ImageSource.gallery);
+
+      if (pickedFile != null) {
+        setState(()async {
+       image = pickedFile.path; 
+          print("picked image successfulyy");
+          // Save the image path
+        });
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Permission Denied')));
+    }
+  }
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 48, 16, 16),
       decoration: BoxDecoration(
@@ -670,21 +728,29 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Column(
         children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 2),
-              image: DecorationImage(
-                image: AssetImage(Images.winnerPhoto),
-                fit: BoxFit.cover,
+          GestureDetector(
+            onTap: ()async {
+          await   _pickImage();
+            },
+            child: Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+                image: DecorationImage(
+                  // image: AssetImage(Images.winnerPhoto.),
+                  image: image.isNotEmpty?FileImage(File(image)):
+                  AssetImage(Images.winnerPhoto),
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
           ),
           const SizedBox(height: 12),
           Text(
-            'John Doe',
+            // 'John Doe',
+            name,
             style: GoogleFonts.poppins(
               fontSize: 20,
               fontWeight: FontWeight.w600,
@@ -692,7 +758,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           Text(
-            'john.doe@example.com',
+            // 'john.doe@example.com',
+            email,
             style: GoogleFonts.poppins(
               fontSize: 14,
               color: Colors.white.withOpacity(0.8),
